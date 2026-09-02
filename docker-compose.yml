@@ -1,0 +1,51 @@
+services:
+
+  database:
+    image: inti-punku-db:1.0
+    environment:
+      POSTGRES_DB: rrhh
+      POSTGRES_USER: rrhh_user
+      POSTGRES_PASSWORD: rrhh_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend-db
+
+  backend:
+    image: inti-punku-backend:1.0
+    environment:
+      DB_HOST: database
+      DB_NAME: rrhh
+      DB_USER: rrhh_user
+      DB_PASSWORD: rrhh_pass
+    depends_on:
+      - database
+    networks:
+      - proxy-backend
+      - backend-db
+
+  frontend:
+    image: inti-punku-frontend:1.0
+    depends_on:
+      - backend
+    networks:
+      - proxy-frontend
+
+  proxy:
+    image: inti-punku-proxy:1.0
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "8080:80"
+    networks:
+      - proxy-frontend
+      - proxy-backend
+
+volumes:
+  postgres_data:
+
+networks:
+  proxy-frontend:
+  proxy-backend:
+  backend-db:

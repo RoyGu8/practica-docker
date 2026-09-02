@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inti Punku - Recursos Humanos</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: 35px;
+        }
+
+        .card p {
+            margin-bottom: 0;
+            color: #666;
+        }
+
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #1f2937;
+            color: white;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+        }
+
+        @media (max-width: 700px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Inti Punku</h1>
+    <p>Sistema de Gestión de Recursos Humanos</p>
+</header>
+
+<div class="container">
+
+    <div class="cards">
+        <div class="card">
+            <h2 id="total-empleados">0</h2>
+            <p>Empleados</p>
+        </div>
+
+        <div class="card">
+            <h2 id="total-departamentos">0</h2>
+            <p>Departamentos</p>
+        </div>
+
+        <div class="card">
+            <h2 id="total-cargos">0</h2>
+            <p>Cargos</p>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <h2>Lista de empleados</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Departamento</th>
+                    <th>Cargo</th>
+                    <th>Fecha de ingreso</th>
+                </tr>
+            </thead>
+
+            <tbody id="empleados">
+                <tr>
+                    <td colspan="6">Cargando...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+
+async function cargarResumen() {
+    const respuesta = await fetch("/api/resumen");
+    const datos = await respuesta.json();
+
+    document.getElementById("total-empleados").textContent = datos.empleados;
+    document.getElementById("total-departamentos").textContent = datos.departamentos;
+    document.getElementById("total-cargos").textContent = datos.cargos;
+}
+
+async function cargarEmpleados() {
+    const respuesta = await fetch("/api/empleados");
+    const empleados = await respuesta.json();
+
+    const tabla = document.getElementById("empleados");
+
+    tabla.innerHTML = "";
+
+    empleados.forEach(e => {
+        const fila = document.createElement("tr");
+
+        fila.innerHTML = `
+            <td>${e.nombre} ${e.apellido}</td>
+            <td>${e.email}</td>
+            <td>${e.telefono}</td>
+            <td>${e.departamento}</td>
+            <td>${e.cargo}</td>
+            <td>${e.fecha_ingreso}</td>
+        `;
+
+        tabla.appendChild(fila);
+    });
+}
+
+async function iniciar() {
+    try {
+        await cargarResumen();
+        await cargarEmpleados();
+    } catch (error) {
+        console.error(error);
+
+        document.getElementById("empleados").innerHTML = `
+            <tr>
+                <td colspan="6" class="error">
+                    Error al conectar con el backend
+                </td>
+            </tr>
+        `;
+    }
+}
+
+iniciar();
+
+</script>
+
+</body>
+</html>
